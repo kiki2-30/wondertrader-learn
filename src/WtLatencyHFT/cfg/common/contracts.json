@@ -1,0 +1,13 @@
+{
+    "SHFE": {
+        "rb2205": {
+            "code": "rb2205",
+            "product": "rb",
+            "exchg": "SHFE",
+            "name": "螺纹钢2205",
+            "session": "SD0930D21",
+            "maxqty": 1000,
+            "minqty": 1
+        }
+    }
+}

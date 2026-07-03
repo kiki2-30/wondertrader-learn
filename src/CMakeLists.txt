@@ -36,6 +36,11 @@ ELSE (GNUCC)
 		SET(SUFFIX .dll)
 
 		MESSAGE(STATUS "MyDepends is at $ENV{MyDependsGcc}")
+	ELSEIF(APPLE)
+		SET (MyDeps "/opt/homebrew")
+		SET(SUFFIX .dylib)
+
+		MESSAGE(STATUS "MyDepends is at /opt/homebrew (macOS)")
 	ELSE(UNIX)
 		SET (MyDeps "/home/mydeps")
 		SET(SUFFIX .so)
@@ -52,6 +57,13 @@ ELSE (GNUCC)
 ENDIF()
 
 SET(CMAKE_CXX_STANDARD 17)
+
+# macOS 兼容：项目内兼容头文件优先于系统头文件
+INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/Compat)
+
+# macOS / fmt 11.x 兼容：禁用编译时格式检查
+# 项目中有自定义类型未定义 fmt::formatter 特化
+ADD_DEFINITIONS(-DFMT_USE_COMPILE_TIME_CHECKS=0)
 
 #basic libraries
 ADD_SUBDIRECTORY(WTSUtils)

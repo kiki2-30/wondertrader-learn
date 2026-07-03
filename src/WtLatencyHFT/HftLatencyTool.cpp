@@ -9,6 +9,7 @@
  */
 #include "HftLatencyTool.h"
 #include "../WtCore/HftStraContext.h"
+#include "../WtCore/WtHelper.h"
 
 #include "../Includes/WTSVariant.hpp"
 #include "../Includes/IParserApi.h"
@@ -63,6 +64,8 @@ namespace hft
 	class TestParser : public IParserApi
 	{
 	public:
+		virtual bool init(WTSVariant* cfg) override { return true; }
+
 		void	run(uint32_t times)
 		{
 			srand(time(NULL));
@@ -159,6 +162,7 @@ namespace hft
 	class TestTrader : public ITraderApi
 	{
 	public:
+		virtual bool init(WTSVariant* cfg) override { return true; }
 
 		virtual void registerSpi(ITraderSpi* listener) override
 		{
@@ -221,6 +225,9 @@ namespace hft
 	bool HftLatencyTool::init()
 	{
 		WTSLogger::init("logcfg.yaml");
+
+		// 设置工作目录，否则 WtHelper::getBaseDir() 会崩溃
+		WtHelper::setInstDir("./");
 
 		WTSVariant* _config = WTSCfgLoader::load_from_file("config.yaml");
 		if (_config == NULL)
@@ -344,15 +351,23 @@ namespace hft
 
 		try
 		{
+			WTSLogger::info("Step 1: starting parsers");
 			_parsers.run();
+			WTSLogger::info("Step 2: starting traders");
 			_traders.run();
-
-			_engine.run();
-
+			WTSLogger::info("Step 3: SKIPPING engine (debug)");
+			//_engine.run();
+			WTSLogger::info("Step 4: running test parser with {} ticks", _times);
 			theParser->run(_times);
+			WTSLogger::info("Step 5: done");
+		}
+		catch (std::exception& e)
+		{
+			WTSLogger::error("Exception: {}", e.what());
 		}
 		catch (...)
 		{
+			WTSLogger::error("Unknown exception");
 		}
 	}
 }

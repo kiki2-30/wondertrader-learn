@@ -1,0 +1,16 @@
+# HFT 延迟测试配置
+basefiles:
+    session: ./common/sessions.json
+    commodity: ./common/commodities.json
+    contract: ./common/contracts.json
+
+env:
+    name: hft
+    product:
+        session: SD0930
+
+# 模拟 tick 数量
+times: 100000
+
+# CPU 核心绑定，0 表示不绑核
+core: 0

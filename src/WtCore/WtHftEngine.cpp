@@ -64,10 +64,14 @@ void WtHftEngine::run()
 		HftContextPtr& ctx = (HftContextPtr&)it->second;
 		ctx->on_init();
 	}
+	WTSLogger::info("Engine: all contexts initialized");
 
 	_tm_ticker = new WtHftRtTicker(this);
 	WTSVariant* cfgProd = _cfg->get("product");
-	_tm_ticker->init(_data_mgr->reader(), cfgProd->getCString("session"));
+	IDataReader* reader = _data_mgr->reader();
+	WTSLogger::info("Engine: data reader is {}", (void*)reader);
+	_tm_ticker->init(reader, cfgProd->getCString("session"));
+	WTSLogger::info("Engine: ticker initialized");
 
 	//启动之前,先把运行中的策略落地
 	{
@@ -103,7 +107,20 @@ void WtHftEngine::run()
 		StdFile::write_file_content(filename.c_str(), sb.GetString());
 	}
 
-	_tm_ticker->run();
+	WTSLogger::info("Engine: about to start ticker");
+	try
+	{
+		_tm_ticker->run();
+	}
+	catch (std::exception& e)
+	{
+		WTSLogger::error("Ticker run exception: {}", e.what());
+	}
+	catch (...)
+	{
+		WTSLogger::error("Ticker run unknown exception");
+	}
+	WTSLogger::info("Engine: ticker started");
 }
 
 void WtHftEngine::handle_push_quote(WTSTickData* newTick)

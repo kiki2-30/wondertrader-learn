@@ -1,0 +1,35 @@
+{
+    "sessions": [
+        {
+            "name": "SD0930",
+            "sections": [
+                {"begin": 905, "end": 1015, "mode": 1},
+                {"begin": 1030, "end": 1130, "mode": 1},
+                {"begin": 1330, "end": 1500, "mode": 1}
+            ]
+        },
+        {
+            "name": "SD2100",
+            "sections": [
+                {"begin": 2100, "end": 2300, "mode": 1}
+            ]
+        },
+        {
+            "name": "SD0930D21",
+            "sections": [
+                {"begin": 905, "end": 1015, "mode": 1},
+                {"begin": 1030, "end": 1130, "mode": 1},
+                {"begin": 1330, "end": 1500, "mode": 1},
+                {"begin": 2100, "end": 2300, "mode": 1}
+            ]
+        },
+        {
+            "name": "SD0900",
+            "sections": [
+                {"begin": 900, "end": 1015, "mode": 1},
+                {"begin": 1030, "end": 1130, "mode": 1},
+                {"begin": 1330, "end": 1515, "mode": 1}
+            ]
+        }
+    ]
+}

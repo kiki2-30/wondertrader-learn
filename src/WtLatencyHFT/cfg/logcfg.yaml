@@ -1,0 +1,5 @@
+root:
+    level: info
+    sinks:
+        -   type: console_sink
+            pattern: "[%H:%M:%S.%e] [%l] %v"

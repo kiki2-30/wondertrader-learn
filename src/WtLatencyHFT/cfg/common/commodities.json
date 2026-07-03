@@ -1,0 +1,15 @@
+{
+    "SHFE": {
+        "rb": {
+            "name": "螺纹钢",
+            "exchg": "SHFE",
+            "category": "FT_Commodity",
+            "session": "SD0930D21",
+            "covermode": 1,
+            "pricemode": 0,
+            "pricetick": 1.0,
+            "multiplier": 10.0,
+            "prec": 0
+        }
+    }
+}
