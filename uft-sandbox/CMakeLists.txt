@@ -56,10 +56,7 @@ file(GLOB_RECURSE UFT_SOURCES
 
 # ===== 构建 =====
 add_library(uft_core STATIC ${UFT_SOURCES})
-target_link_libraries(uft_core
-    pthread
-)
 
-# ===== 主入口（留空，未来添加）=====
-# add_executable(uft_sandbox main.cpp)
-# target_link_libraries(uft_sandbox uft_core)
+# ===== 主入口（测试）=====
+add_executable(uft_sandbox src/main.cpp)
+target_link_libraries(uft_sandbox uft_core pthread dl boost_filesystem)
