@@ -1,0 +1,9 @@
+DAY:
+  name: "日盘"
+  offset: 0
+  auction:
+    from: 90000000
+    to: 91500000
+  sections:
+    - from: 90000000
+      to: 150000000

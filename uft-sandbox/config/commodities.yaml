@@ -1,0 +1,11 @@
+SHFE:
+  rb:
+    name: "螺纹钢"
+    session: "DAY"
+    holiday: "DAY"
+    pricetick: 1
+    volscale: 10
+    covermode: 1
+    pricemode: 0
+    lotstick: 1
+    minlots: 1
