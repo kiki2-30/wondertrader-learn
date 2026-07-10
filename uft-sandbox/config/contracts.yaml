@@ -1,5 +1,17 @@
 SHFE:
-  rb2305:
+  rb:
+    name: "螺纹钢"
+    exchg: "SHFE"
+    product: "rb"
+    maxmarketqty: 1000
+    maxlimitqty: 1000
+    minmarketqty: 1
+    minlimitqty: 1
+    opendate: 20200101
+    expiredate: 20261231
+    longmarginratio: 0.1
+    shortmarginratio: 0.1
+  rb.2305:
     name: "螺纹钢2305"
     exchg: "SHFE"
     product: "rb"
@@ -7,7 +19,7 @@ SHFE:
     maxlimitqty: 1000
     minmarketqty: 1
     minlimitqty: 1
-    opendate: 20230101
-    expiredate: 20231231
+    opendate: 20200101
+    expiredate: 20261231
     longmarginratio: 0.1
     shortmarginratio: 0.1

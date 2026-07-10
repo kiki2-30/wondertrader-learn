@@ -1,0 +1,6 @@
+default:
+  order:
+    - action: open
+    - action: close
+    - action: closetoday
+    - action: closeyestoday

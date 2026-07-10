@@ -10,6 +10,7 @@
 #include "WtUftCore/ActionPolicyMgr.h"
 #include "Includes/WTSDataDef.hpp"
 #include "Includes/UftStrategyDefs.h"
+#include "Includes/WTSContractInfo.hpp"
 #include "WTSTools/WTSBaseDataMgr.h"
 
 #include <cstdio>
@@ -106,10 +107,21 @@ int main() {
 
     // ===== 初始化 =====
     TEST("初始化");
+
+    // 加载合约基础数据
+    WTSBaseDataMgr baseDataMgr;
+    bool b1 = baseDataMgr.loadSessions("../config/sessions.yaml");
+    bool b2 = baseDataMgr.loadCommodities("../config/commodities.yaml");
+    bool b3 = baseDataMgr.loadContracts("../config/contracts.yaml");
+    printf("  loadSessions=%d loadCommodities=%d loadContracts=%d\n", b1, b2, b3); fflush(stdout);
+    
+    ActionPolicyMgr policyMgr;
+    policyMgr.init("../config/action_policy.yaml");
+
     WtUftEngine engine;
     WtUftDtMgr dtMgr;
     dtMgr.init(nullptr, &engine);
-    engine.init(nullptr, nullptr, &dtMgr, nullptr);
+    engine.init(nullptr, &baseDataMgr, &dtMgr, nullptr);
 
     FullStrategy stra;
     UftStraContext ctx(&engine, "full");
@@ -123,16 +135,11 @@ int main() {
     engine.sub_order_detail(ctx.id(), "SHFE.rb.2305");
     engine.sub_transaction(ctx.id(), "SHFE.rb.2305");
 
-    // 设置 Mock 交易通道 + 基础数据
+    // 设置 Mock 交易通道
     MockTraderApi mockApi;
-    WTSBaseDataMgr baseDataMgr;
-    baseDataMgr.loadSessions("../config/sessions.yaml");
-    baseDataMgr.loadCommodities("../config/commodities.yaml");
-    baseDataMgr.loadContracts("../config/contracts.yaml");
-    
-    ActionPolicyMgr policyMgr;
     TraderAdapter adapter;
     adapter.initExt("mock", &mockApi, &baseDataMgr, &policyMgr);
+    adapter.run();  // ← 创建 _stat_map, registerSpi, connect
     ctx.setTrader(&adapter);
     printf("引擎+策略+订阅+交易通道+合约数据: OK\n");
     fflush(stdout);
@@ -195,11 +202,36 @@ int main() {
     stra.on_position(&ctx, "SHFE.rb.2305", true, 10, 10, 5, 5);
 
     // ===== Test 5: stra_buy 完整链路 =====
-    TEST("stra_buy 完整链路 (TODO: TraderAdapter::buy 逻辑复杂,需深入调试)");
-    printf("  WTSBaseDataMgr 加载成功, TraderAdapter 已初始化\n");
-    printf("  stra_buy() → TraderAdapter::buy() → getContract() → 合约信息可用\n");
-    printf("  当前 stra_buy 内部 segfault, 需要更完整的 TraderAdapter 初始化\n");
-    // ctx.stra_buy("SHFE.rb.2305", 3605.0, 1, 0);
+    TEST("stra_buy → MockApi → 成交回报 → 记账 → 策略");
+    {
+        printf("  测试 getContract... 跳过(stra_buy内部调用)\n"); fflush(stdout);
+        printf("  调用 adapter.buy...\n"); fflush(stdout);
+        auto res1 = adapter.buy("SHFE.rb.2305", 3605.0, 1, 0, false);
+        printf("  adapter.buy OK, ids=%zu\n", res1.size()); fflush(stdout);
+        
+        printf("  测试 engine.get_contract_info...\n"); fflush(stdout);
+        auto* eci = engine.get_contract_info("SHFE.rb.2305");
+        printf("  engine.contract_info=%p\n", (void*)eci); fflush(stdout);
+        
+        printf("  调用 ctx.stra_enter_long...\n"); fflush(stdout);
+        auto id = ctx.stra_enter_long("SHFE.rb.2305", 3605.0, 1, 0);
+        printf("  stra_enter_long → id=%u\n", id); fflush(stdout);
+        
+        // 模拟成交
+        if (id != UINT_MAX) {
+            printf("  模拟成交 → ctx.on_trade(id=%u)\n", id); fflush(stdout);
+            ctx.on_trade(id, "SHFE.rb.2305", true, 0, 1.0, 3605.0);
+        }
+        
+        printf("  调用 ctx.stra_buy(qty=1)...\n"); fflush(stdout);
+        auto ids = ctx.stra_buy("SHFE.rb.2305", 3610.0, 1, 0);
+        printf("  stra_buy → %zu ids:", ids.size());
+        for (auto tid : ids) { printf(" %u", tid); ctx.on_trade(tid, "SHFE.rb.2305", true, 0, 1.0, 3610.0); }
+        printf("\n"); fflush(stdout);
+    }
+    printf("\n  最终持仓: long=%.0f short=%.0f\n",
+           ctx.stra_get_position("SHFE.rb.2305", true),
+           ctx.stra_get_position("SHFE.rb.2305", false));
 
     // ===== Test 5: 持仓同步 =====
     TEST("持仓同步");
