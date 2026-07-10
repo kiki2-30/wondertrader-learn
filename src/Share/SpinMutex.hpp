@@ -1,9 +1,5 @@
 ﻿#pragma once
 #include <atomic>
-#ifdef _MSC_VER
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
 
 class SpinMutex
 {
@@ -19,13 +15,7 @@ public:
 				break;
 
 			while (flag.load(std::memory_order_relaxed))
-			{
-#ifdef _MSC_VER
-				_mm_pause();
-#else
 				__builtin_ia32_pause();
-#endif
-			}
 		}
 	}
 

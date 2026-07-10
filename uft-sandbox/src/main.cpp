@@ -197,52 +197,72 @@ int main() {
     TEST("on_order - 撤单通知");
     stra.on_order(&ctx, 2001, "SHFE.rb.2305", true, 0, 3.0, 0.0, 3605.0, true);
 
-    // ===== Test 5: 持仓同步 =====
-    TEST("持仓同步");
-    stra.on_position(&ctx, "SHFE.rb.2305", true, 10, 10, 5, 5);
-
     // ===== Test 5: stra_buy 完整链路 =====
-    TEST("stra_buy → MockApi → 成交回报 → 记账 → 策略");
+    TEST("stra_buy → MockApi → 成交 → 记账 → 策略");
     {
-        printf("  测试 getContract... 跳过(stra_buy内部调用)\n"); fflush(stdout);
-        printf("  调用 adapter.buy...\n"); fflush(stdout);
+        // 必须先调 adapter.buy 初始化 TraderAdapter 内部状态
         auto res1 = adapter.buy("SHFE.rb.2305", 3605.0, 1, 0, false);
-        printf("  adapter.buy OK, ids=%zu\n", res1.size()); fflush(stdout);
+        printf("  adapter.buy OK, ids=%zu\n", res1.size());
         
-        printf("  测试 engine.get_contract_info...\n"); fflush(stdout);
-        auto* eci = engine.get_contract_info("SHFE.rb.2305");
-        printf("  engine.contract_info=%p\n", (void*)eci); fflush(stdout);
-        
-        printf("  调用 ctx.stra_enter_long...\n"); fflush(stdout);
         auto id = ctx.stra_enter_long("SHFE.rb.2305", 3605.0, 1, 0);
-        printf("  stra_enter_long → id=%u\n", id); fflush(stdout);
+        printf("  stra_enter_long → id=%u\n", id);
         
-        // 模拟成交
-        if (id != UINT_MAX) {
-            printf("  模拟成交 → ctx.on_trade(id=%u)\n", id); fflush(stdout);
+        if (id != UINT_MAX)
             ctx.on_trade(id, "SHFE.rb.2305", true, 0, 1.0, 3605.0);
-        }
         
-        printf("  调用 ctx.stra_buy(qty=1)...\n"); fflush(stdout);
         auto ids = ctx.stra_buy("SHFE.rb.2305", 3610.0, 1, 0);
         printf("  stra_buy → %zu ids:", ids.size());
         for (auto tid : ids) { printf(" %u", tid); ctx.on_trade(tid, "SHFE.rb.2305", true, 0, 1.0, 3610.0); }
-        printf("\n"); fflush(stdout);
+        printf("\n");
     }
-    printf("\n  最终持仓: long=%.0f short=%.0f\n",
+    printf("  持仓: long=%.0f short=%.0f\n",
            ctx.stra_get_position("SHFE.rb.2305", true),
            ctx.stra_get_position("SHFE.rb.2305", false));
 
-    // ===== Test 5: 持仓同步 =====
+    // ===== Test 6: 查询接口 =====
+    TEST("查询接口");
+    printf("  stra_get_date=%u stra_get_time=%u stra_get_secs=%u\n",
+           ctx.stra_get_date(), ctx.stra_get_time(), ctx.stra_get_secs());
+    
+    auto* commInfo = ctx.stra_get_comminfo("SHFE.rb.2305");
+    printf("  stra_get_comminfo=%p name=%s\n", (void*)commInfo, commInfo?commInfo->getName():"nil");
+    
+    WTSTickData* lastTick = ctx.stra_get_last_tick("SHFE.rb.2305");
+    printf("  stra_get_last_tick=%p price=%.2f\n", (void*)lastTick, lastTick?lastTick->price():0);
+    
+    WTSTickSlice* ticks = ctx.stra_get_ticks("SHFE.rb.2305", 5);
+    printf("  stra_get_ticks(5)=%p size=%u\n", (void*)ticks, ticks?ticks->size():0);
+    
+    WTSKlineSlice* bars = ctx.stra_get_bars("SHFE.rb.2305", "m1", 5);
+    printf("  stra_get_bars(m1,5)=%p size=%u\n", (void*)bars, bars?bars->size():0);
+
+    // ===== Test 7: on_bar / on_params_updated =====
+    TEST("on_bar - K线闭合");
+    {
+        WTSBarStruct bar;
+        memset(&bar, 0, sizeof(bar));
+        bar.open = 3500.0; bar.high = 3550.0; bar.low = 3490.0; bar.close = 3520.0;
+        stra.on_bar(&ctx, "SHFE.rb.2305", "m1", 1, &bar);
+    }
+    
+    TEST("on_params_updated");
+    stra.on_params_updated();
+
+    // ===== Test 8: 撤单 =====
+    TEST("stra_cancel");
+    bool cancelOk = ctx.stra_cancel(2001);
+    printf("  stra_cancel(2001)=%d\n", cancelOk);
+
+    // ===== Test 9: 持仓同步 + 回调 =====
     TEST("持仓同步");
     stra.on_position(&ctx, "SHFE.rb.2305", true, 10, 10, 5, 5);
 
-    // ===== Test 6: 通道断连 =====
+    // ===== Test 10: 通道断连 =====
     TEST("通道断连");
     ctx.on_channel_lost();
     ctx.on_channel_ready(20240702);
 
-    // ===== Test 7: 会话结束 =====
+    // ===== Test 11: 会话结束 =====
     TEST("会话结束");
     ctx.on_session_end(20240701);
 
