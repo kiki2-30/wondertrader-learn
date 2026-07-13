@@ -14,11 +14,7 @@
 
 #include <boost/filesystem.hpp>
 
-#ifdef _MSC_VER
-#include <direct.h>
-#else	//UNIX
 #include <unistd.h>
-#endif
 
 uint32_t WtHelper::_cur_date = 0;
 uint32_t WtHelper::_cur_time = 0;
@@ -34,11 +30,7 @@ std::string WtHelper::getCWD()
 	if(_cwd.empty())
 	{
 		char   buffer[256];
-#ifdef _MSC_VER
-		_getcwd(buffer, 255);
-#else	//UNIX
 		getcwd(buffer, 255);
-#endif
 		_cwd = StrUtil::standardisePath(buffer);
 	}	
 	return _cwd;

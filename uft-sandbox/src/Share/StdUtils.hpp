@@ -16,11 +16,7 @@
 #include <stdint.h>
 #include <string>
 
-#if _MSC_VER
-#include <io.h>
-#else
 #include <unistd.h>
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 //std线程类
@@ -86,11 +82,7 @@ public:
 
 	static inline bool exists(const char* filename)
 	{
-#if _WIN32
-		int ret = _access(filename, 0);
-#else
 		int ret = access(filename, 0);
-#endif
 		return ret == 0;
 	}
 };

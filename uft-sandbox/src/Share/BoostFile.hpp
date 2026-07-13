@@ -14,15 +14,8 @@
 #include <boost/interprocess/detail/os_file_functions.hpp>
 #include <string>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#else
 #include <unistd.h>
-#endif
 
-//struct OVERLAPPED;
-//extern "C" __declspec(dllimport) int __stdcall ReadFile(void *hnd, void *buffer, unsigned long bytes_to_write,unsigned long *bytes_written, OVERLAPPED* overlapped);
 class BoostFile
 {
 public:
@@ -150,24 +143,13 @@ public:
 
 	bool read_file(void *data, std::size_t numdata)
 	{
-		unsigned long readbytes = 0;
-#ifdef _WIN32
-		int ret = ReadFile(_handle, data, (DWORD)numdata, &readbytes, NULL);
-#else
-		readbytes = read(_handle, data, (std::size_t)numdata);
-#endif
+		unsigned long readbytes = read(_handle, data, (std::size_t)numdata);
 		return numdata == readbytes;
 	}
 
 	int read_file_length(void *data, std::size_t numdata)
 	{
-		unsigned long readbytes = 0;
-#ifdef _WIN32
-		int ret = ReadFile(_handle, data, (DWORD)numdata, &readbytes, NULL);
-#else
-		readbytes = read(_handle, data, (std::size_t)numdata);
-#endif
-		return readbytes;
+		return read(_handle, data, (std::size_t)numdata);
 	}
 
 private:

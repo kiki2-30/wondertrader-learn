@@ -246,11 +246,7 @@ public:
 
 		if(ignoreCase)
 		{
-#ifdef _MSC_VER
-			return _strnicmp(str, pattern, patternLen) == 0;
-#else
-			return strncasecmp(str, pattern, patternLen) == 0;
-#endif
+		return strncasecmp(str, pattern, patternLen) == 0;
 		}
 		else
 		{
@@ -275,11 +271,7 @@ public:
 
 		if (ignoreCase)
 		{
-#ifdef _MSC_VER
-			return _strnicmp(s, pattern, patternLen) == 0;
-#else
-			return strncasecmp(s, pattern, patternLen) == 0;
-#endif
+		return strncasecmp(s, pattern, patternLen) == 0;
 		}
 		else
 		{
@@ -433,11 +425,7 @@ public:
 
 		while (1)
 		{
-#ifdef _MSC_VER
-			int n = _vsnprintf(buffer, size, pszFormat, argptr);
-#else
-			int n = vsnprintf(buffer, size, pszFormat, argptr);
-#endif
+		int n = vsnprintf(buffer, size, pszFormat, argptr);
 
 			// If that worked, return a string.
 			if (n > -1 && n < size)
@@ -494,11 +482,7 @@ public:
 			va_list argptrcopy;
 			va_copy(argptrcopy, argptr);
 
-#ifdef _MSC_VER
-			len = _vsnprintf(buf, size, pszFormat, argptrcopy);
-#else
-			len = vsnprintf(buf, size, pszFormat, argptrcopy);
-#endif
+		len = vsnprintf(buf, size, pszFormat, argptrcopy);
 			va_end(argptrcopy);
 
 			if ( len >= 0 && len <= size )

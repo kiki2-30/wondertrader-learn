@@ -201,14 +201,8 @@ WTSVariant* WTSCfgLoader::load_from_content(const std::string& content, bool isY
 
 	std::string buffer;
 	//Linux下得是UTF8
-	//Win下得是GBK
-#ifdef _WIN32
-	if (isUTF8)
-		buffer = UTF8toChar(content);
-#else
 	if (!isUTF8)
 		buffer = ChartoUTF8(content);
-#endif
 
 	if (buffer.empty())
 		buffer = content;
@@ -234,14 +228,8 @@ WTSVariant* WTSCfgLoader::load_from_file(const char* filename)
 
 	//By Wesley @ 2022.01.07
 	//Linux下得是UTF8
-	//Win下得是GBK
-#ifdef _WIN32
-	if(isUTF8)
-		content = UTF8toChar(content);
-#else
 	if (!isUTF8)
 		content = ChartoUTF8(content);
-#endif
 
 	if (StrUtil::endsWith(filename, ".json"))
 		return load_from_json(content.c_str());

@@ -10,11 +10,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sys/timeb.h>
-#ifdef _MSC_VER
-#include <time.h>
-#else
 #include <sys/time.h>
-#endif
 
 #include "WTSLogger.h"
 #include "../WTSUtils/WTSCfgLoader.h"

@@ -10,45 +10,12 @@
 #pragma once
 #include <stdint.h>
 #include <sys/timeb.h>
-#ifdef _MSC_VER
-#include <time.h>
-#else
 #include <sys/time.h>
-#endif
 #include <string>
 #include <string.h>
 #include<chrono>
 #include <thread>
 #include <cmath>
-
-#ifdef _MSC_VER
-#define CTIME_BUF_SIZE 64
-
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-
-typedef struct _KSYSTEM_TIME
-{
-	ULONG LowPart;
-	LONG High1Time;
-	LONG High2Time;
-} KSYSTEM_TIME, *PKSYSTEM_TIME;
-
-struct KUSER_SHARED_DATA
-{
-	ULONG TickCountLowDeprecated;
-	ULONG TickCountMultiplier;
-	volatile KSYSTEM_TIME InterruptTime;
-	volatile KSYSTEM_TIME SystemTime;
-	volatile KSYSTEM_TIME TimeZoneBias;
-};
-
-#define KI_USER_SHARED_DATA   0x7FFE0000
-#define SharedUserData   ((KUSER_SHARED_DATA * const)KI_USER_SHARED_DATA)
-
-#define TICKSPERSEC        10000000L
-#endif
 
 class TimeUtils 
 {
@@ -66,28 +33,12 @@ public:
 	 */
 	static inline int64_t getLocalTimeNow(void)
 	{
-#ifdef _MSC_VER
-		LARGE_INTEGER SystemTime;
-		do
-		{
-			SystemTime.HighPart = SharedUserData->SystemTime.High1Time;
-			SystemTime.LowPart = SharedUserData->SystemTime.LowPart;
-		} while (SystemTime.HighPart != SharedUserData->SystemTime.High2Time);
-
-		uint64_t t = SystemTime.QuadPart;
-		t = t - 11644473600L * TICKSPERSEC;
-		return t / 10000;
-#else
-		//timeb now;
-		//ftime(&now);
-		//return now.time * 1000 + now.millitm;
 		/*
 		 *	clock_gettime比ftime会提升约10%的性能
 		 */
 		thread_local static struct timespec now;
 		clock_gettime(CLOCK_REALTIME, &now);
 		return now.tv_sec * 1000 + now.tv_nsec / 1000000;
-#endif
 	}
 
 	static inline std::string getLocalTime(bool bIncludeMilliSec = true)
@@ -233,11 +184,7 @@ public:
 		if (msec < 0) return "";
 		time_t tt =  sec;
 		struct tm t;
-#ifdef _WIN32
-		localtime_s(&t, &tt);
-#else
 		localtime_r(&tt, &t);
-#endif
 		char tm_buf[64] = {'\0'};
 		if (msec > 0) //是否有毫秒
 		   sprintf(tm_buf,"%4d%02d%02d%02d%02d%02d.%03d",t.tm_year+1900, t.tm_mon+1, t.tm_mday,
@@ -343,11 +290,7 @@ public:
 
 		Time32(time_t _time, uint32_t msecs = 0)
 		{
-#ifdef _WIN32
-			localtime_s(&t, &_time);
-#else
 			localtime_r(&_time, &t);
-#endif
 			_msec = msecs;
 		}
 
@@ -355,22 +298,14 @@ public:
 		{
 			time_t _t = _time/1000;
 			_msec = (uint32_t)_time%1000;
-#ifdef _WIN32
-			localtime_s(&t, &_t);
-#else
 			localtime_r(&_t, &t);
-#endif
 		}
 
 		void from_local_time(uint64_t _time)
 		{
 			time_t _t = _time/1000;
 			_msec = (uint32_t)(_time%1000);
-#ifdef _WIN32
-			localtime_s(&t, &_t);
-#else
 			localtime_r(&_t, &t);
-#endif
 		}
 
 		uint32_t date()

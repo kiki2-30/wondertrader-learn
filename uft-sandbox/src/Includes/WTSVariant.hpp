@@ -18,13 +18,8 @@
 #include <vector>
 #include <map>
 
-#ifdef _MSC_VER
-#define INT64_FMT	"%I64d"
-#define UINT64_FMT	"%I64u"
-#else
 #define INT64_FMT	"%ld"
 #define UINT64_FMT	"%lu"
-#endif
 
 
 NS_WTP_BEGIN
